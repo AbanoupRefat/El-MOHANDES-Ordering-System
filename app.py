@@ -72,7 +72,7 @@ st.markdown("""
     .product-header {
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
+        align-items: center;
         margin-bottom: 12px;
         flex-wrap: wrap;
         gap: 12px;
@@ -112,9 +112,10 @@ st.markdown("""
         background-color: white;
         border: 2px solid #e9ecef;
         border-radius: 25px;
-        padding: 4px;
+        padding: 6px 12px;
         min-width: 140px;
-        justify-content: center;
+        justify-content: space-between;
+        margin: 0 auto;
     }
     
     .qty-btn {
@@ -525,10 +526,16 @@ def render_product_card(item, category_name):
     minus_key = f"minus_{hash(product_name)}_{hash(category_name)}"
     plus_key = f"plus_{hash(product_name)}_{hash(category_name)}"
     
-    # Product card HTML structure
-    card_html = f'''
-    <div class="product-card">
-        <div class="product-header">
+    # Create the complete product card using Streamlit container
+    with st.container():
+        # Product card start
+        st.markdown('<div class="product-card">', unsafe_allow_html=True)
+        
+        # Create two columns for product info and quantity controls
+        info_col, qty_col = st.columns([2, 1])
+        
+        with info_col:
+            st.markdown(f'''
             <div class="product-info">
                 <div class="product-name">{product_name}</div>
                 <div class="product-origin">
@@ -537,43 +544,41 @@ def render_product_card(item, category_name):
                 </div>
                 <div class="product-price">💰 {price} جنيه</div>
             </div>
-            <div class="quantity-controls">
-    '''
-    
-    st.markdown(card_html, unsafe_allow_html=True)
-    
-    # Quantity controls in embedded columns
-    col1, col2, col3 = st.columns([1, 1, 1])
-    
-    with col1:
-        if st.button("−", key=minus_key, disabled=current_qty <= 0, help="تقليل الكمية"):
-            update_quantity(product_name, -1)
-            st.rerun()
-    
-    with col2:
-        st.markdown(f'<div class="qty-display">{current_qty}</div>', unsafe_allow_html=True)
-    
-    with col3:
-        if st.button("+", key=plus_key, help="زيادة الكمية"):
-            update_quantity(product_name, 1)
-            st.rerun()
-    
-    # Close quantity controls and add footer if item is selected
-    footer_html = '''
+            ''', unsafe_allow_html=True)
+        
+        with qty_col:
+            # Quantity controls
+            st.markdown('<div class="quantity-controls">', unsafe_allow_html=True)
+            
+            # Create three mini columns for the quantity controls
+            minus_col, qty_display_col, plus_col = st.columns([1, 1, 1])
+            
+            with minus_col:
+                if st.button("−", key=minus_key, disabled=current_qty <= 0, help="تقليل الكمية"):
+                    update_quantity(product_name, -1)
+                    st.rerun()
+            
+            with qty_display_col:
+                st.markdown(f'<div class="qty-display">{current_qty}</div>', unsafe_allow_html=True)
+            
+            with plus_col:
+                if st.button("+", key=plus_key, help="زيادة الكمية"):
+                    update_quantity(product_name, 1)
+                    st.rerun()
+            
+            st.markdown('</div>', unsafe_allow_html=True)  # Close quantity-controls
+        
+        # Add footer if item is selected
+        if current_qty > 0:
+            st.markdown(f'''
+            <div class="product-footer">
+                <div class="subtotal">المجموع: {subtotal} جنيه</div>
+                <div style="font-size: 12px; color: #666;">الكمية: {current_qty}</div>
             </div>
-        </div>
-    '''
-    
-    if current_qty > 0:
-        footer_html += f'''
-        <div class="product-footer">
-            <div class="subtotal">المجموع: {subtotal} جنيه</div>
-            <div style="font-size: 12px; color: #666;">الكمية: {current_qty}</div>
-        </div>
-        '''
-    
-    footer_html += '</div>'
-    st.markdown(footer_html, unsafe_allow_html=True)
+            ''', unsafe_allow_html=True)
+        
+        # Close product card
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # Main app
 def main():
