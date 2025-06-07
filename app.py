@@ -241,7 +241,15 @@ def load_google_sheet():
     try:
         # Get credentials from Streamlit secrets
         credentials_dict = dict(st.secrets["gcp_service_account"])
-        credentials = Credentials.from_service_account_info(credentials_dict)
+        
+        # Define the required scopes for Google Sheets
+        scopes = [
+            'https://www.googleapis.com/auth/spreadsheets.readonly',
+            'https://www.googleapis.com/auth/drive.readonly'
+        ]
+        
+        # Create credentials with proper scopes
+        credentials = Credentials.from_service_account_info(credentials_dict, scopes=scopes)
         
         # Connect to Google Sheets
         gc = gspread.authorize(credentials)
@@ -252,15 +260,29 @@ def load_google_sheet():
         data = sheet.get_all_records()
         df = pd.DataFrame(data)
         
+        # Debug: Show column names
+        st.write("Available columns:", df.columns.tolist())
+        
+        # If DataFrame is empty, try getting all values
+        if df.empty:
+            all_values = sheet.get_all_values()
+            if all_values:
+                df = pd.DataFrame(all_values[1:], columns=all_values[0])
+        
         # Ensure required columns exist
         required_columns = ['البند', 'المنشأ', 'السعر']
         for col in required_columns:
             if col not in df.columns:
                 st.error(f"Missing required column: {col}")
+                st.write("Available columns:", df.columns.tolist())
                 return pd.DataFrame()
         
-        # Convert price to numeric
+        # Convert price to numeric, handling Arabic numerals
         df['السعر'] = pd.to_numeric(df['السعر'], errors='coerce').fillna(0)
+        
+        # Remove empty rows
+        df = df.dropna(subset=['البند'])
+        df = df[df['البند'] != '']
         
         return df
     except Exception as e:
