@@ -91,7 +91,7 @@ st.markdown("""
         color: #dc2626 !important;
         font-weight: 700;
         font-size: 1.1rem;
-        background: #ffffff !important;
+        background: #f8fafc !important;
         padding: 0.25rem 0.5rem;
         border-radius: 4px;
         text-align: center;
@@ -102,7 +102,6 @@ st.markdown("""
         font-weight: 700;
         display: block;
         color: #ffffff !important;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
     
     .page-info {
@@ -153,7 +152,7 @@ st.markdown("""
         color: #dc2626 !important;
         font-weight: 700;
         font-size: 1.2rem;
-        background: #ffffff !important;
+        background: #f8fafc !important;
         padding: 0.25rem 0.5rem;
         border-radius: 4px;
     }
@@ -215,11 +214,13 @@ st.markdown("""
         font-size: 2rem;
         font-weight: 700;
         display: block;
+        color: white !important;
     }
     
     .stat-label {
         font-size: 0.9rem;
         opacity: 0.9;
+        color: white !important;
     }
     
     .whatsapp-btn {
@@ -248,6 +249,20 @@ st.markdown("""
     .rtl {
         direction: rtl;
         text-align: right;
+    }
+    
+    /* Fix for contrast issues */
+    .st-emotion-cache-1v0mbdj {
+        color: #1e293b !important;
+    }
+    
+    .st-emotion-cache-1v0mbdj strong {
+        color: #1e293b !important;
+    }
+    
+    /* Hide JSON preview */
+    .stJson {
+        display: none;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -287,9 +302,6 @@ def load_google_sheet():
         data = sheet.get_all_records()
         df = pd.DataFrame(data)
         
-        # Debug: Show column names (commented out for production)
-        # st.write("Available columns:", df.columns.tolist())
-        
         # If DataFrame is empty, try getting all values
         if df.empty:
             all_values = sheet.get_all_values()
@@ -301,7 +313,6 @@ def load_google_sheet():
         for col in required_columns:
             if col not in df.columns:
                 st.error(f"Missing required column: {col}")
-                st.write("Available columns:", df.columns.tolist())
                 return pd.DataFrame()
         
         # Convert price to numeric, handling Arabic numerals
@@ -362,16 +373,16 @@ def display_products_table(products_df):
         st.warning("لا توجد منتجات للعرض")
         return
     
-    # Create table header - RTL order: البند, المنشأ, السعر, الكمية, التحكم, الإجمالي
+    # Create table header - RTL order: الإجمالي, التحكم, الكمية, السعر, المنشأ, البند
     st.markdown("""
     <div class="products-table">
-        <div style="display: grid; grid-template-columns: 3fr 1fr 1fr 1fr 1fr 1fr; gap: 1rem; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600; direction: rtl;">
-            <div style="text-align: right;">البند</div>
-            <div style="text-align: center;">المنشأ</div>
-            <div style="text-align: center;">السعر</div>
-            <div style="text-align: center;">الكمية</div>
-            <div style="text-align: center;">التحكم</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 3fr; gap: 1rem; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600; direction: rtl;">
             <div style="text-align: center;">الإجمالي</div>
+            <div style="text-align: center;">التحكم</div>
+            <div style="text-align: center;">الكمية</div>
+            <div style="text-align: center;">السعر</div>
+            <div style="text-align: center;">المنشأ</div>
+            <div style="text-align: right;">البند</div>
         </div>
     """, unsafe_allow_html=True)
     
@@ -389,22 +400,16 @@ def display_products_table(products_df):
         if product_name in st.session_state.cart:
             st.session_state.cart[product_name]['price'] = price
         
-        # Create table row in RTL order: البند, المنشأ, السعر, الكمية, التحكم, الإجمالي
-        col1, col2, col3, col4, col5, col6 = st.columns([3, 1, 1, 1, 1, 1])
+        # Create table row in RTL order: الإجمالي, التحكم, الكمية, السعر, المنشأ, البند
+        col1, col2, col3, col4, col5, col6 = st.columns([1, 1, 1, 1, 1, 3])
         
-        with col1:  # البند
-            st.markdown(f'<div class="product-name-cell" style="text-align: right; direction: rtl;">{product_name}</div>', unsafe_allow_html=True)
+        with col1:  # الإجمالي
+            if subtotal > 0:
+                st.markdown(f'<div class="subtotal-cell">{subtotal} ج.م</div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="subtotal-cell" style="text-align: center; color: #64748b;">-</div>', unsafe_allow_html=True)
         
-        with col2:  # المنشأ
-            st.markdown(f'<div class="origin-cell" style="text-align: center;">{origin}</div>', unsafe_allow_html=True)
-        
-        with col3:  # السعر
-            st.markdown(f'<div class="price-cell" style="text-align: center;">{price} ج.م</div>', unsafe_allow_html=True)
-        
-        with col4:  # الكمية
-            st.markdown(f'<div class="qty-display" style="text-align: center; padding: 0.25rem; background: #ffffff !important; border: 2px solid #3b82f6; border-radius: 4px; font-weight: 700; color: #1e293b !important;">{current_qty}</div>', unsafe_allow_html=True)
-        
-        with col5:  # التحكم
+        with col2:  # التحكم
             # Quantity controls in a row
             btn_col1, btn_col2 = st.columns(2)
             with btn_col1:
@@ -418,11 +423,17 @@ def display_products_table(products_df):
                     update_quantity(product_name, 1)
                     st.rerun()
         
-        with col6:  # الإجمالي
-            if subtotal > 0:
-                st.markdown(f'<div class="subtotal-cell" style="text-align: center; color: #dc2626 !important; font-weight: 700; background: #ffffff !important; padding: 0.25rem 0.5rem; border-radius: 4px;">{subtotal} ج.م</div>', unsafe_allow_html=True)
-            else:
-                st.markdown('<div class="subtotal-cell" style="text-align: center; color: #64748b;">-</div>', unsafe_allow_html=True)
+        with col3:  # الكمية
+            st.markdown(f'<div class="qty-display">{current_qty}</div>', unsafe_allow_html=True)
+        
+        with col4:  # السعر
+            st.markdown(f'<div class="price-cell">{price} ج.م</div>', unsafe_allow_html=True)
+        
+        with col5:  # المنشأ
+            st.markdown(f'<div class="origin-cell">{origin}</div>', unsafe_allow_html=True)
+        
+        with col6:  # البند
+            st.markdown(f'<div class="product-name-cell rtl">{product_name}</div>', unsafe_allow_html=True)
         
         # Add row separator
         st.markdown('<div style="border-bottom: 1px solid #e2e8f0; margin: 0.5rem 0;"></div>', unsafe_allow_html=True)
@@ -483,7 +494,7 @@ def main():
         # Display products
         st.markdown(f"### المنتجات (الصفحة {st.session_state.current_page} من {total_pages})")
         
-        # Display products table
+        # Display products table with RTL layout
         display_products_table(current_products)
         
         # Pagination controls
@@ -561,14 +572,14 @@ def main():
             st.markdown("---")
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
-                if st.button("📱 إرسال الطلبية عبر واتساب", use_container_width=True, type="primary"):
-                    whatsapp_number = st.secrets["whatsapp"]["number"]
-                    message = generate_whatsapp_message()
-                    whatsapp_url = f"https://wa.me/{whatsapp_number}?text={message}"
-                    
-                    st.success("سيتم فتح واتساب لإرسال الطلبية...")
-                    st.markdown(f'<meta http-equiv="refresh" content="1;url={whatsapp_url}">', unsafe_allow_html=True)
-                    st.markdown(f"[اضغط هنا إذا لم يتم فتح واتساب تلقائياً]({whatsapp_url})")
+                whatsapp_number = st.secrets["whatsapp"]["number"]
+                message = generate_whatsapp_message()
+                whatsapp_url = f"https://wa.me/{whatsapp_number}?text={message}"
+                
+                st.markdown(
+                    f'<a href="{whatsapp_url}" target="_blank" class="whatsapp-btn">📱 إرسال الطلبية عبر واتساب</a>',
+                    unsafe_allow_html=True
+                )
 
 if __name__ == "__main__":
     main()
