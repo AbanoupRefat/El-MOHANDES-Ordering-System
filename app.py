@@ -88,9 +88,31 @@ st.markdown("""
     }
     
     .subtotal-cell {
-        color: #dc2626;
+        color: #dc2626 !important;
         font-weight: 700;
         font-size: 1.1rem;
+        background: #ffffff !important;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        display: block;
+        color: #ffffff !important;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .page-info {
+        text-align: center; 
+        padding: 0.5rem;
+        background: #ffffff !important;
+        border: 2px solid #3b82f6;
+        border-radius: 8px;
+        font-weight: 600;
+        color: #1e293b !important;
     }
     
     .quantity-controls {
@@ -116,19 +138,24 @@ st.markdown("""
     }
     
     .qty-display {
-        background: #f1f5f9;
-        border: 1px solid #cbd5e1;
+        background: #ffffff !important;
+        border: 2px solid #3b82f6 !important;
         border-radius: 6px;
         padding: 0.25rem 0.75rem;
         min-width: 50px;
         text-align: center;
-        font-weight: 600;
+        font-weight: 700 !important;
+        color: #1e293b !important;
+        font-size: 1rem !important;
     }
     
     .subtotal {
-        color: #dc2626;
+        color: #dc2626 !important;
         font-weight: 700;
         font-size: 1.2rem;
+        background: #ffffff !important;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
     }
     
     .pagination {
@@ -260,8 +287,8 @@ def load_google_sheet():
         data = sheet.get_all_records()
         df = pd.DataFrame(data)
         
-        # Debug: Show column names
-        st.write("Available columns:", df.columns.tolist())
+        # Debug: Show column names (commented out for production)
+        # st.write("Available columns:", df.columns.tolist())
         
         # If DataFrame is empty, try getting all values
         if df.empty:
@@ -335,20 +362,20 @@ def display_products_table(products_df):
         st.warning("لا توجد منتجات للعرض")
         return
     
-    # Create table header
+    # Create table header - RTL order: البند, المنشأ, السعر, الكمية, التحكم, الإجمالي
     st.markdown("""
     <div class="products-table">
-        <div style="display: grid; grid-template-columns: 3fr 1fr 1fr 1fr 1fr 1fr; gap: 1rem; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600;">
-            <div class="rtl">البند</div>
-            <div class="rtl">المنشأ</div>
-            <div class="rtl">السعر</div>
-            <div class="rtl">الكمية</div>
-            <div class="rtl">التحكم</div>
-            <div class="rtl">الإجمالي</div>
+        <div style="display: grid; grid-template-columns: 3fr 1fr 1fr 1fr 1fr 1fr; gap: 1rem; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600; direction: rtl;">
+            <div style="text-align: right;">البند</div>
+            <div style="text-align: center;">المنشأ</div>
+            <div style="text-align: center;">السعر</div>
+            <div style="text-align: center;">الكمية</div>
+            <div style="text-align: center;">التحكم</div>
+            <div style="text-align: center;">الإجمالي</div>
         </div>
     """, unsafe_allow_html=True)
     
-    # Display each product row
+    # Display each product row in RTL order
     for idx, (_, product) in enumerate(products_df.iterrows()):
         product_name = product['البند']
         origin = product['المنشأ']
@@ -362,22 +389,22 @@ def display_products_table(products_df):
         if product_name in st.session_state.cart:
             st.session_state.cart[product_name]['price'] = price
         
-        # Create table row
+        # Create table row in RTL order: البند, المنشأ, السعر, الكمية, التحكم, الإجمالي
         col1, col2, col3, col4, col5, col6 = st.columns([3, 1, 1, 1, 1, 1])
         
-        with col1:
-            st.markdown(f'<div class="product-name-cell rtl">{product_name}</div>', unsafe_allow_html=True)
+        with col1:  # البند
+            st.markdown(f'<div class="product-name-cell" style="text-align: right; direction: rtl;">{product_name}</div>', unsafe_allow_html=True)
         
-        with col2:
-            st.markdown(f'<div class="origin-cell rtl">{origin}</div>', unsafe_allow_html=True)
+        with col2:  # المنشأ
+            st.markdown(f'<div class="origin-cell" style="text-align: center;">{origin}</div>', unsafe_allow_html=True)
         
-        with col3:
-            st.markdown(f'<div class="price-cell">{price} ج.م</div>', unsafe_allow_html=True)
+        with col3:  # السعر
+            st.markdown(f'<div class="price-cell" style="text-align: center;">{price} ج.م</div>', unsafe_allow_html=True)
         
-        with col4:
-            st.markdown(f'<div class="qty-display" style="text-align: center; padding: 0.25rem; background: #f1f5f9; border-radius: 4px; font-weight: 600;">{current_qty}</div>', unsafe_allow_html=True)
+        with col4:  # الكمية
+            st.markdown(f'<div class="qty-display" style="text-align: center; padding: 0.25rem; background: #ffffff !important; border: 2px solid #3b82f6; border-radius: 4px; font-weight: 700; color: #1e293b !important;">{current_qty}</div>', unsafe_allow_html=True)
         
-        with col5:
+        with col5:  # التحكم
             # Quantity controls in a row
             btn_col1, btn_col2 = st.columns(2)
             with btn_col1:
@@ -391,14 +418,14 @@ def display_products_table(products_df):
                     update_quantity(product_name, 1)
                     st.rerun()
         
-        with col6:
+        with col6:  # الإجمالي
             if subtotal > 0:
-                st.markdown(f'<div class="subtotal-cell">{subtotal} ج.م</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="subtotal-cell" style="text-align: center; color: #dc2626 !important; font-weight: 700; background: #ffffff !important; padding: 0.25rem 0.5rem; border-radius: 4px;">{subtotal} ج.م</div>', unsafe_allow_html=True)
             else:
-                st.markdown('<div class="subtotal-cell">-</div>', unsafe_allow_html=True)
+                st.markdown('<div class="subtotal-cell" style="text-align: center; color: #64748b;">-</div>', unsafe_allow_html=True)
         
         # Add row separator
-        st.markdown('<div style="border-bottom: 1px solid #f1f5f9; margin: 0.5rem 0;"></div>', unsafe_allow_html=True)
+        st.markdown('<div style="border-bottom: 1px solid #e2e8f0; margin: 0.5rem 0;"></div>', unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -474,7 +501,7 @@ def main():
                     st.rerun()
             
             with col3:
-                st.markdown(f'<div style="text-align: center; padding: 0.5rem;">الصفحة {st.session_state.current_page} من {total_pages}</div>', 
+                st.markdown(f'<div class="page-info">الصفحة {st.session_state.current_page} من {total_pages}</div>', 
                           unsafe_allow_html=True)
             
             with col4:
