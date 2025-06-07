@@ -233,23 +233,42 @@ st.markdown("""
     
     /* Review Section */
     .review-section {
-        background: #f8f9fa;
-        border-radius: 16px;
-        padding: 2rem;
-        margin: 2rem 0;
-        border: 1px solid #e9ecef;
-    }
-    
+    background: #f8f9fa;
+    border-radius: 16px;
+    padding: 2rem;
+    margin: 2rem 0;
+    border: 1px solid #e9ecef;
+}
+.review-item strong {
+    color: #1a202c; /* Darker color for strong elements */
+}
+
+.review-item small {
+    color: #718096; /* Gray color for origin text */
+}
+
+/* Make sure review section headers are visible */
+.review-section h3 {
+    color: #2d3748;
+    margin-bottom: 1rem;
+}
+
+/* Ensure price information is clearly visible */
+.review-item div:last-child {
+    color: #2d3748;
+    font-weight: 500;
+}    
     .review-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem;
-        background: white;
-        border-radius: 8px;
-        margin: 0.5rem 0;
-        border-left: 4px solid #667eea;
-    }
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    margin: 0.5rem 0;
+    border-left: 4px solid #667eea;
+    color: #2d3748; /* Add explicit text color */
+}
     
     /* WhatsApp Button */
     .whatsapp-btn {
