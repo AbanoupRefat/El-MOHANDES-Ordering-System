@@ -203,6 +203,7 @@ if 'show_review' not in st.session_state:
 SHEET_URL = st.secrets["google"]["sheet_id"] # Replace with your actual sheet ID
 WHATSAPP_NUMBER = st.secrets["whatsapp"]["number"] # Replace with actual WhatsApp number
 
+@st.cache_data(ttl=300)  # Cache for 5 minutes
 def load_google_sheet_data_real():
     """Load data from real Google Sheets - Use this when API is set up"""
     try:
@@ -224,38 +225,6 @@ def load_google_sheet_data_real():
     
     except Exception as e:
         st.error(f"خطأ في تحميل البيانات من Google Sheets: {str(e)}")
-        return pd.DataFrame()
-
-@st.cache_data(ttl=300)  # Cache for 5 minutes
-def load_csv_data():
-    """Load data from the uploaded CSV file"""
-    try:
-        # Read the CSV file
-        df = pd.read_csv('test - قطع_غيار_السيارات.csv')
-        
-        # Clean the data and handle empty rows
-        df = df.reset_index(drop=True)
-        
-        # Identify empty rows (where all main columns are NaN or empty)
-        empty_mask = (
-            (df['البند'].isna() | (df['البند'] == '')) &
-            (df['المنشأ'].isna() | (df['المنشأ'] == '')) &
-            (df['السعر'].isna() | (df['السعر'] == ''))
-        )
-        
-        # Mark empty rows for category separation
-        df['is_separator'] = empty_mask
-        
-        # Fill missing prices with 0 for non-separator rows
-        df.loc[~df['is_separator'], 'السعر'] = df.loc[~df['is_separator'], 'السعر'].fillna(0)
-        
-        # Convert price to numeric
-        df['السعر'] = pd.to_numeric(df['السعر'], errors='coerce').fillna(0)
-        
-        return df
-        
-    except Exception as e:
-        st.error(f"خطأ في تحميل البيانات من ملف CSV: {str(e)}")
         return pd.DataFrame()
 
 def process_data_with_categories(df):
@@ -398,7 +367,7 @@ def main():
     # Load data
     if st.session_state.products_data is None:
         with st.spinner('جاري تحميل البيانات...'):
-            st.session_state.products_data = load_csv_data()
+            st.session_state.products_data = load_google_sheet_data_real()
     
     df = st.session_state.products_data
     
