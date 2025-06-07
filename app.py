@@ -108,7 +108,7 @@ if 'show_review' not in st.session_state:
     st.session_state.show_review = False
 
 # Google Sheets configuration
-SHEET_URL = st.secrets["google"]["sheet_url"] # Replace with your actual sheet URL
+SHEET_URL = st.secrets["google"]["sheet_id"] # Replace with your actual sheet ID
 WHATSAPP_NUMBER = st.secrets["whatsapp"]["number"] # Replace with actual WhatsApp number
 
 def load_google_sheet_data_real():
@@ -122,7 +122,7 @@ def load_google_sheet_data_real():
         )
         
         gc = gspread.authorize(credentials)
-        sheet = gc.open_by_url(SHEET_URL).sheet1
+        sheet = gc.open_by_key(SHEET_URL).sheet1
         data = sheet.get_all_records()
         
         # Convert to DataFrame and ensure correct column names
