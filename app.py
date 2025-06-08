@@ -4,11 +4,11 @@ import gspread
 from google.oauth2.service_account import Credentials
 import urllib.parse
 import json
+import hashlib
 from typing import Dict, List
 import math
 from datetime import datetime
 from collections import defaultdict
-import hashlib
 
 # Configure page
 st.set_page_config(
@@ -666,17 +666,22 @@ def display_products_table(grouped_products):
     st.markdown('<div class="mobile-table-container scroll-target">', unsafe_allow_html=True)
     st.markdown('<div class="products-table">', unsafe_allow_html=True)
     
-    # Table header
-    st.markdown("""
-    <div class="table-header">
-        <div>البند</div>
-        <div>المنشأ</div>
-        <div>السعر</div>
-        <div>الكمية</div>
-        <div>التحكم</div>
-        <div>الإجمالي</div>
-    </div>
-    """, unsafe_allow_html=True)
+    # Table header using columns
+    header_cols = st.columns([3, 1.5, 1.2, 1, 1.5, 1.2])
+    header_style = 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1rem; text-align: center; font-weight: 600; border-radius: 8px; margin: 2px;'
+
+    with header_cols[0]:
+        st.markdown(f'<div style="{header_style}">البند</div>', unsafe_allow_html=True)
+    with header_cols[1]:
+        st.markdown(f'<div style="{header_style}">المنشأ</div>', unsafe_allow_html=True)
+    with header_cols[2]:
+        st.markdown(f'<div style="{header_style}">السعر</div>', unsafe_allow_html=True)
+    with header_cols[3]:
+        st.markdown(f'<div style="{header_style}">الكمية</div>', unsafe_allow_html=True)
+    with header_cols[4]:
+        st.markdown(f'<div style="{header_style}">التحكم</div>', unsafe_allow_html=True)
+    with header_cols[5]:
+        st.markdown(f'<div style="{header_style}">الإجمالي</div>', unsafe_allow_html=True)
     
     # Display each item (product or separator)
     for item in grouped_products:
@@ -949,4 +954,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
