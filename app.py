@@ -8,6 +8,7 @@ from typing import Dict, List
 import math
 from datetime import datetime
 from collections import defaultdict
+import hashlib
 
 # Configure page
 st.set_page_config(
@@ -691,7 +692,7 @@ def display_products_table(grouped_products):
             product = item['data']
             # Use a unique key for each button, combining product name and a unique identifier
             # This is crucial for Streamlit to correctly identify buttons after reruns
-            unique_key_base = f"{product['البند']}_{product['المنشأ']}_{product['السعر']}"
+            unique_key_base = hashlib.md5(f"{product['البند']}_{product['المنشأ']}_{product['السعر']}".encode()).hexdigest()[:8]
             
             product_name = product['البند']
             origin = product['المنشأ']
@@ -705,38 +706,43 @@ def display_products_table(grouped_products):
             if product_name in st.session_state.cart:
                 st.session_state.cart[product_name]['price'] = price
             
-            # Create table row with embedded controls
-            st.markdown(f"""
-            <div class="table-row">
-                <div class="product-name-cell">{product_name}</div>
-                <div class="origin-cell">{origin}</div>
-                <div class="price-cell">{price} ج.م</div>
-                <div class="qty-display">{current_qty}</div>
-                <div class="control-buttons">
-            """, unsafe_allow_html=True)
-            
-            # Add quantity control buttons using columns for proper alignment
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("➖", key=f"minus_{unique_key_base}", 
-                            help="تقليل الكمية", use_container_width=True):
-                    update_quantity(product_name, -1)
-                    st.rerun()
-            with col2:
-                if st.button("➕", key=f"plus_{unique_key_base}", 
-                            help="زيادة الكمية", use_container_width=True):
-                    if product_name not in st.session_state.cart:
-                        st.session_state.cart[product_name] = {'quantity': 0, 'price': price}
-                    update_quantity(product_name, 1)
-                    st.rerun()
-            
-            # Close control buttons div and add subtotal
-            subtotal_display = f"{subtotal} ج.م" if subtotal > 0 else "-"
-            st.markdown(f"""
-                </div>
-                <div class="subtotal-cell">{subtotal_display}</div>
-            </div>
-            """, unsafe_allow_html=True)
+            # Create the complete table row using columns for proper button handling
+            cols = st.columns([3, 1.5, 1.2, 1, 1.5, 1.2])
+
+            # Style for table cells
+            cell_style = 'padding: 0.75rem; border-bottom: 1px solid #f1f5f9; text-align: center; direction: rtl;'
+            name_cell_style = 'padding: 0.75rem; border-bottom: 1px solid #f1f5f9; text-align: right; direction: rtl; font-weight: 600;'
+            price_cell_style = 'padding: 0.75rem; border-bottom: 1px solid #f1f5f9; text-align: center; color: #2f855a; font-weight: 600;'
+            qty_cell_style = 'padding: 0.5rem; border-bottom: 1px solid #f1f5f9; text-align: center; background: #ffffff; border: 2px solid #3b82f6; border-radius: 6px; font-weight: 700; margin: 2px;'
+            subtotal_cell_style = 'padding: 0.5rem; border-bottom: 1px solid #f1f5f9; text-align: center; color: #c53030; font-weight: 700; background: #fed7d7; border-radius: 4px; margin: 2px;'
+
+            with cols[0]:
+                st.markdown(f'<div style="{name_cell_style}">{product_name}</div>', unsafe_allow_html=True)
+            with cols[1]:
+                st.markdown(f'<div style="{cell_style}">{origin}</div>', unsafe_allow_html=True)
+            with cols[2]:
+                st.markdown(f'<div style="{price_cell_style}">{price} ج.م</div>', unsafe_allow_html=True)
+            with cols[3]:
+                st.markdown(f'<div style="{qty_cell_style}">{current_qty}</div>', unsafe_allow_html=True)
+            with cols[4]:
+                # Control buttons in a nested column layout
+                btn_cols = st.columns(2)
+                with btn_cols[0]:
+                    if st.button("➖", key=f"minus_{unique_key_base}", help="تقليل الكمية", use_container_width=True):
+                        update_quantity(product_name, -1)
+                        st.rerun()
+                with btn_cols[1]:
+                    if st.button("➕", key=f"plus_{unique_key_base}", help="زيادة الكمية", use_container_width=True):
+                        if product_name not in st.session_state.cart:
+                            st.session_state.cart[product_name] = {'quantity': 0, 'price': price}
+                        update_quantity(product_name, 1)
+                        st.rerun()
+            with cols[5]:
+                subtotal_display = f"{subtotal} ج.م" if subtotal > 0 else "-"
+                st.markdown(f'<div style="{subtotal_cell_style}">{subtotal_display}</div>', unsafe_allow_html=True)
+
+            # Add spacing between rows
+            st.markdown('<div style="height: 10px;"></div>', unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
