@@ -192,7 +192,7 @@ st.markdown("""
     
     .qty-btn {
         background: #3b82f6;
-        color: white;
+        color: Black;
         border: none;
         border-radius: 4px;
         width: 24px;
