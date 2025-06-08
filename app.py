@@ -694,12 +694,12 @@ def main():
             col1, col2, col3, col4, col5 = st.columns([1, 1, 2, 1, 1])
             
             with col1:
-                if st.button("⏮️ الأولى", disabled=st.session_state.current_page == 1):
+                if st.button("الأولى", disabled=st.session_state.current_page == 1):
                     navigate_to_page(1)
                     st.rerun()
             
             with col2:
-                if st.button("⬅️ السابقة", disabled=st.session_state.current_page == 1):
+                if st.button("السابقة", disabled=st.session_state.current_page == 1):
                     navigate_to_page(st.session_state.current_page - 1)
                     st.rerun()
             
@@ -708,12 +708,12 @@ def main():
                           unsafe_allow_html=True)
             
             with col4:
-                if st.button("التالية ➡️", disabled=st.session_state.current_page == total_pages):
+                if st.button("التالية", disabled=st.session_state.current_page == total_pages):
                     navigate_to_page(st.session_state.current_page + 1)
                     st.rerun()
             
             with col5:
-                if st.button("الأخيرة ⏭️", disabled=st.session_state.current_page == total_pages):
+                if st.button("الأخيرة", disabled=st.session_state.current_page == total_pages):
                     navigate_to_page(total_pages)
                     st.rerun()
         
