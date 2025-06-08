@@ -82,10 +82,6 @@ st.markdown("""
         min-height: 60px;
     }
     
-    .table-row:hover {
-        background-color: #f8fafc;
-    }
-    
     .table-row:last-child {
         border-bottom: none;
     }
@@ -100,7 +96,7 @@ st.markdown("""
     }
     
     .origin-cell {
-        color: #4a5568;
+        color: #ffffff;
         font-size: 0.9rem;
         text-align: center;
     }
