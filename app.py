@@ -354,7 +354,7 @@ st.markdown("""
     }
     
     .order-detail-qty {
-        color: #4a5568;
+        color: #fffff;
         text-align: center;
     }
     
