@@ -88,7 +88,7 @@ st.markdown("""
     
     .product-name-cell {
         font-weight: 600;
-        color: #2d3748;
+        color: #fffff;
         font-size: 0.95rem;
         text-align: right;
         word-wrap: break-word;
