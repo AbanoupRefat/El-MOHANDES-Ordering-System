@@ -7,6 +7,7 @@ import json
 from typing import Dict, List
 import math
 from datetime import datetime
+from collections import defaultdict
 
 # Configure page
 st.set_page_config(
@@ -33,6 +34,43 @@ st.markdown("""
         font-weight: 700;
         margin-bottom: 2rem;
         text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* Category separator styling */
+    .category-separator {
+        height: 40px;
+        background: linear-gradient(90deg, transparent 0%, #e3f2fd 20%, #e3f2fd 80%, transparent 100%);
+        position: relative;
+        margin: 20px 0;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .category-separator::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+        height: 3px;
+        background: linear-gradient(90deg, transparent 0%, #2196f3 50%, transparent 100%);
+        border-radius: 2px;
+    }
+    
+    .category-separator::after {
+        content: '✨';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 5px 10px;
+        border-radius: 50%;
+        box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+        font-size: 1.2rem;
     }
     
     /* Mobile-first responsive table container */
@@ -81,8 +119,6 @@ st.markdown("""
         align-items: center;
         min-height: 60px;
     }
-    
-    
     
     .table-row:last-child {
         border-bottom: none;
@@ -436,7 +472,7 @@ if 'search_query' not in st.session_state:
 
 @st.cache_data
 def load_google_sheet():
-    """Load data from Google Sheets"""
+    """Load data from Google Sheets with new structure: الفئة, البند, المنشأ, السعر"""
     try:
         # Get credentials from Streamlit secrets
         credentials_dict = dict(st.secrets["gcp_service_account"])
@@ -465,8 +501,8 @@ def load_google_sheet():
             if all_values:
                 df = pd.DataFrame(all_values[1:], columns=all_values[0])
         
-        # Ensure required columns exist
-        required_columns = ['البند', 'المنشأ', 'السعر']
+        # Ensure required columns exist for new structure
+        required_columns = ['الفئة', 'البند', 'المنشأ', 'السعر']
         for col in required_columns:
             if col not in df.columns:
                 st.error(f"Missing required column: {col}")
@@ -479,10 +515,42 @@ def load_google_sheet():
         df = df.dropna(subset=['البند'])
         df = df[df['البند'] != '']
         
+        # Sort by category to group products together
+        df = df.sort_values(['الفئة', 'البند'])
+        
         return df
     except Exception as e:
         st.error(f"Error loading Google Sheet: {str(e)}")
         return pd.DataFrame()
+
+def group_products_by_category(df):
+    """Group products by category and add separators"""
+    if df.empty:
+        return []
+    
+    grouped_products = []
+    current_category = None
+    
+    for idx, (_, product) in enumerate(df.iterrows()):
+        category = product['الفئة']
+        
+        # Add separator when category changes (except for the first category)
+        if current_category is not None and category != current_category:
+            grouped_products.append({
+                'type': 'separator',
+                'category': category
+            })
+        
+        # Add the product
+        grouped_products.append({
+            'type': 'product',
+            'data': product,
+            'original_index': idx
+        })
+        
+        current_category = category
+    
+    return grouped_products
 
 def update_quantity(product_name: str, change: int):
     """Update product quantity in cart"""
@@ -541,9 +609,9 @@ def generate_whatsapp_message():
     message = "\n".join(message_lines)
     return urllib.parse.quote(message)
 
-def display_products_table(products_df):
-    """Display products in a responsive table format"""
-    if products_df.empty:
+def display_products_table(grouped_products):
+    """Display products in a responsive table format with category separators"""
+    if not grouped_products:
         st.warning("لا توجد منتجات للعرض")
         return
     
@@ -563,52 +631,60 @@ def display_products_table(products_df):
     </div>
     """, unsafe_allow_html=True)
     
-    # Display each product row
-    for idx, (_, product) in enumerate(products_df.iterrows()):
-        product_name = product['البند']
-        origin = product['المنشأ']
-        price = product['السعر']
+    # Display each item (product or separator)
+    for item in grouped_products:
+        if item['type'] == 'separator':
+            # Display category separator
+            st.markdown('<div class="category-separator"></div>', unsafe_allow_html=True)
         
-        # Get current quantity from cart
-        current_qty = st.session_state.cart.get(product_name, {}).get('quantity', 0)
-        subtotal = current_qty * price if current_qty > 0 else 0
-        
-        # Update cart with current price
-        if product_name in st.session_state.cart:
-            st.session_state.cart[product_name]['price'] = price
-        
-        # Create table row with embedded controls
-        st.markdown(f"""
-        <div class="table-row">
-            <div class="product-name-cell">{product_name}</div>
-            <div class="origin-cell">{origin}</div>
-            <div class="price-cell">{price} ج.م</div>
-            <div class="qty-display">{current_qty}</div>
-            <div class="control-buttons">
-        """, unsafe_allow_html=True)
-        
-        # Add quantity control buttons using columns for proper alignment
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("➖", key=f"minus_{idx}_{st.session_state.current_page}", 
-                        help="تقليل الكمية", use_container_width=True):
-                update_quantity(product_name, -1)
-                st.rerun()
-        with col2:
-            if st.button("➕", key=f"plus_{idx}_{st.session_state.current_page}", 
-                        help="زيادة الكمية", use_container_width=True):
-                if product_name not in st.session_state.cart:
-                    st.session_state.cart[product_name] = {'quantity': 0, 'price': price}
-                update_quantity(product_name, 1)
-                st.rerun()
-        
-        # Close control buttons div and add subtotal
-        subtotal_display = f"{subtotal} ج.م" if subtotal > 0 else "-"
-        st.markdown(f"""
+        elif item['type'] == 'product':
+            product = item['data']
+            idx = item['original_index']
+            
+            product_name = product['البند']
+            origin = product['المنشأ']
+            price = product['السعر']
+            
+            # Get current quantity from cart
+            current_qty = st.session_state.cart.get(product_name, {}).get('quantity', 0)
+            subtotal = current_qty * price if current_qty > 0 else 0
+            
+            # Update cart with current price
+            if product_name in st.session_state.cart:
+                st.session_state.cart[product_name]['price'] = price
+            
+            # Create table row with embedded controls
+            st.markdown(f"""
+            <div class="table-row">
+                <div class="product-name-cell">{product_name}</div>
+                <div class="origin-cell">{origin}</div>
+                <div class="price-cell">{price} ج.م</div>
+                <div class="qty-display">{current_qty}</div>
+                <div class="control-buttons">
+            """, unsafe_allow_html=True)
+            
+            # Add quantity control buttons using columns for proper alignment
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("➖", key=f"minus_{idx}_{st.session_state.current_page}", 
+                            help="تقليل الكمية", use_container_width=True):
+                    update_quantity(product_name, -1)
+                    st.rerun()
+            with col2:
+                if st.button("➕", key=f"plus_{idx}_{st.session_state.current_page}", 
+                            help="زيادة الكمية", use_container_width=True):
+                    if product_name not in st.session_state.cart:
+                        st.session_state.cart[product_name] = {'quantity': 0, 'price': price}
+                    update_quantity(product_name, 1)
+                    st.rerun()
+            
+            # Close control buttons div and add subtotal
+            subtotal_display = f"{subtotal} ج.م" if subtotal > 0 else "-"
+            st.markdown(f"""
+                </div>
+                <div class="subtotal-cell">{subtotal_display}</div>
             </div>
-            <div class="subtotal-cell">{subtotal_display}</div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
@@ -693,12 +769,16 @@ def main():
         if origin_filter and origin_filter != "الكل":
             filtered_df = filtered_df[filtered_df['المنشأ'] == origin_filter]
         
+        # Group products by category with separators
+        grouped_products = group_products_by_category(filtered_df)
+        
         # Show results count
-        st.markdown(f"**عدد النتائج: {len(filtered_df)} منتج**")
+        product_count = len([item for item in grouped_products if item['type'] == 'product'])
+        st.markdown(f"**عدد النتائج: {product_count} منتج**")
         
         # Pagination settings
         items_per_page = 15
-        total_items = len(filtered_df)
+        total_items = len(grouped_products)
         total_pages = math.ceil(total_items / items_per_page) if total_items > 0 else 1
         
         if total_items == 0:
@@ -712,7 +792,7 @@ def main():
         # Calculate pagination
         start_idx = (st.session_state.current_page - 1) * items_per_page
         end_idx = min(start_idx + items_per_page, total_items)
-        current_products = filtered_df.iloc[start_idx:end_idx]
+        current_items = grouped_products[start_idx:end_idx]
         
         # Display products with scroll target
         st.markdown(f"### المنتجات ( {st.session_state.current_page}/{total_pages})")
@@ -720,7 +800,7 @@ def main():
         # Create container for products table that will be scrolled to
         products_container = st.container()
         with products_container:
-            display_products_table(current_products)
+            display_products_table(current_items)
         
         # Pagination controls
         if total_pages > 1:
@@ -794,3 +874,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
