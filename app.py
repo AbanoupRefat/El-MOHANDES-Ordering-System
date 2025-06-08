@@ -563,7 +563,7 @@ st.markdown("""
             border-radius: 4px;
         }
     }
-    
+
     @media (max-width: 480px) {
         .main-header {
             font-size: 1.5rem;
@@ -611,99 +611,6 @@ st.markdown("""
         .whatsapp-btn {
             padding: 0.7rem 1rem;
             font-size: 0.9rem;
-        }
-    }
-    
-    /* Force table to maintain structure */
-    .stColumn {
-        /* Removed min-width: auto !important; to allow better responsiveness */
-    }
-    
-    /* Hide JSON preview */
-    .stJson {
-        display: none;
-    }
-    
-    /* Order details styling */
-    .order-detail-row {
-        display: grid;
-        grid-template-columns: 3fr 1fr 1fr 1fr;
-        gap: 1rem;
-        padding: 0.75rem;
-        border-bottom: 1px solid #e2e8f0;
-        align-items: center;
-        direction: rtl;
-    }
-    
-    .order-detail-row:last-child {
-        border-bottom: none;
-    }
-    
-    .order-detail-item {
-        color: #fffff;
-        font-weight: 600;
-        text-align: right;
-    }
-    
-    .order-detail-qty {
-        color: #fffff;
-        text-align: center;
-    }
-    
-    .order-detail-price {
-        color: #2f855a;
-        font-weight: 600;
-        text-align: center;
-    }
-    
-    .order-detail-subtotal {
-        color: #c53030;
-        font-weight: 700;
-        text-align: center;
-        background: #fed7d7;
-        padding: 0.25rem;
-        border-radius: 4px;
-    }
-    
-    .order-detail-row {
-        grid-template-columns: 2fr 1fr 1fr 1fr;
-        gap: 0.5rem;
-        padding: 0.5rem;
-        font-size: 0.9rem;
-    }
-    
-    /* Responsive styles for pagination buttons */
-    @media (max-width: 768px) {
-        .stButton > button {
-            font-size: 0.8rem;
-            padding: 0.5rem 0.25rem;
-            height: auto;
-            min-height: unset;
-        }
-        
-        .stButton > button > div > span { /* Target the text container inside Streamlit buttons */
-            white-space: normal !important; /* Force text wrapping */
-            word-wrap: break-word; /* Break long words */
-            display: inline-block; /* Helps with wrapping */
-            line-height: 1.2;
-        }
-        
-        /* Adjust column sizes for pagination on mobile */
-        .stColumn:has(.stButton) { /* Select columns that contain buttons */
-            min-width: unset !important; /* Remove any min-width if present */
-            max-width: unset !important; /* Remove any max-width if present */
-            flex-grow: 1; /* Allow columns to grow evenly */
-        }
-    }
-
-    @media (max-width: 480px) {
-        .stButton > button {
-            font-size: 0.7rem;
-            padding: 0.4rem 0.15rem;
-        }
-        
-        .stButton > button > div > span {
-            font-size: 0.65rem; /* Ensure inner text is also smaller */
         }
     }
 </style>
@@ -929,7 +836,7 @@ def display_products_table(grouped_products):
             price = product['السعر']
             
             # Get current quantity from cart
-            current_qty = st.session_state.cart.get(product_name, {}).get('quantity', 0);
+            current_qty = st.session_state.cart.get(product_name, {}).get('quantity', 0)
             subtotal = current_qty * price if current_qty > 0 else 0
             
             # Update cart with current price
@@ -968,7 +875,7 @@ def display_products_table(grouped_products):
                     if st.button("➕", key=f"plus_{unique_key_base}", help="زيادة الكمية", use_container_width=True):
                         if product_name not in st.session_state.cart:
                             st.session_state.cart[product_name] = {'quantity': 0, 'price': price}
-                        update_quantity(product_name, 1);
+                        update_quantity(product_name, 1)
                         st.rerun()
             
             # Close the mobile card and add subtotal
@@ -1012,7 +919,7 @@ def display_order_details():
         subtotal = qty * price
         
         # Desktop version (table row)
-        st.markdown(f"""
+        st.markdown(f'''
         <div class="order-detail-row">
             <div class="order-detail-item">{product_name}</div>
             <div class="mobile-order-details">
@@ -1030,7 +937,7 @@ def display_order_details():
                 </div>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        ''', unsafe_allow_html=True)
 
 def navigate_to_page(new_page):
     """Navigate to a new page"""
