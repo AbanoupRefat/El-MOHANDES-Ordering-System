@@ -524,6 +524,7 @@ def load_google_sheet():
         data_rows = all_values[1:]
         
         processed_data = []
+        global_product_index = 0 # Initialize a global index for products
         for row in data_rows:
             # Check if the row is completely empty (or contains only whitespace)
             if not any(cell.strip() for cell in row):
@@ -544,8 +545,10 @@ def load_google_sheet():
                     product_data[header] = value
                 processed_data.append({
                     'type': 'product',
-                    'data': product_data
+                    'data': product_data,
+                    'global_id': global_product_index # Add a unique global ID
                 })
+                global_product_index += 1
         
         # Convert to DataFrame for easier processing later
         # We'll create a dummy DataFrame for now, and process the actual data later
@@ -684,7 +687,7 @@ def display_products_table(grouped_products):
         st.markdown(f'<div style="{header_style}">الإجمالي</div>', unsafe_allow_html=True)
     
     # Display each item (product or separator)
-    for item in grouped_products:
+    for i, item in enumerate(grouped_products):
         if item['type'] == 'category_separator':
             # Display main category separator
             st.markdown('<div class="category-separator"></div>', unsafe_allow_html=True)
@@ -697,7 +700,7 @@ def display_products_table(grouped_products):
             product = item['data']
             # Use a unique key for each button, combining product name and a unique identifier
             # This is crucial for Streamlit to correctly identify buttons after reruns
-            unique_key_base = hashlib.md5(f"{product['البند']}_{product['المنشأ']}_{product['السعر']}".encode()).hexdigest()[:8]
+            unique_key_base = item['global_id'] # Use the globally unique ID
             
             product_name = product['البند']
             origin = product['المنشأ']
