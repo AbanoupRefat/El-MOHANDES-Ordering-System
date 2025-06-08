@@ -534,7 +534,13 @@ def load_google_sheet():
                 # Create a dictionary for the product row
                 product_data = {}
                 for i, header in enumerate(headers):
-                    product_data[header] = row[i]
+                    value = row[i]
+                    if header == 'السعر':
+                        try:
+                            value = float(value) # Convert price to float
+                        except ValueError:
+                            value = 0.0 # Default to 0.0 if conversion fails
+                    product_data[header] = value
                 processed_data.append({
                     'type': 'product',
                     'data': product_data
@@ -550,9 +556,6 @@ def load_google_sheet():
             if col not in df.columns:
                 st.error(f"Missing required column: {col}")
                 return pd.DataFrame()
-        
-        # Convert price to numeric, handling Arabic numerals
-        df['السعر'] = pd.to_numeric(df['السعر'], errors='coerce').fillna(0)
         
         # Remove empty rows from the actual product data (they are now separators)
         df = df.dropna(subset=['البند'])
@@ -598,7 +601,7 @@ def group_products_by_category(data_list):
 def update_quantity(product_name: str, change: int):
     """Update product quantity in cart"""
     if product_name not in st.session_state.cart:
-        st.session_state.cart[product_name] = {'quantity': 0, 'price': 0}
+        st.session_state.cart[product_name] = {'quantity': 0, 'price': 0.0}
     
     new_quantity = st.session_state.cart[product_name]['quantity'] + change
     st.session_state.cart[product_name]['quantity'] = max(0, new_quantity)
