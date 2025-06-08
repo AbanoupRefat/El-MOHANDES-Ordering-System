@@ -348,7 +348,7 @@ st.markdown("""
     }
     
     .order-detail-item {
-        color: #2d3748;
+        color: #fffff;
         font-weight: 600;
         text-align: right;
     }
