@@ -23,7 +23,7 @@ st.markdown("""
     
     * {
         font-family: 'Cairo', sans-serif !important;
-        box-sizing: border-box;
+        
     }
     
     .main-header {
