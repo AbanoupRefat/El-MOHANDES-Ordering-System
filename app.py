@@ -45,7 +45,6 @@ st.markdown("""
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         border: 1px solid #e2e8f0;
         margin: 1rem 0;
-        scroll-margin-top: 20px; /* Add scroll margin for better positioning */
     }
     
     .products-table {
@@ -83,7 +82,9 @@ st.markdown("""
         min-height: 60px;
     }
     
-    .
+    .table-row:hover {
+        background: #f8fafc;
+    }
     
     .table-row:last-child {
         border-bottom: none;
@@ -91,7 +92,7 @@ st.markdown("""
     
     .product-name-cell {
         font-weight: 600;
-        color: #fffff;
+        color: #2d3748;
         font-size: 0.95rem;
         text-align: right;
         word-wrap: break-word;
@@ -231,11 +232,9 @@ st.markdown("""
         text-align: right;
     }
     
-    /* Anchor for scroll target */
-    .products-anchor {
-        position: relative;
-        top: -20px;
-        visibility: hidden;
+    /* Scroll target styling */
+    .scroll-target {
+        scroll-margin-top: 20px;
     }
     
     /* Mobile responsive design */
@@ -358,13 +357,13 @@ st.markdown("""
     }
     
     .order-detail-item {
-        color: #fffff;
+        color: #2d3748;
         font-weight: 600;
         text-align: right;
     }
     
     .order-detail-qty {
-        color: #fffff;
+        color: #4a5568;
         text-align: center;
     }
     
@@ -394,24 +393,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# JavaScript function for smooth scrolling to products table
-def scroll_to_products():
-    """Add JavaScript to scroll to products table"""
-    st.markdown("""
-    <script>
-    setTimeout(function() {
-        const productsSection = document.querySelector('.mobile-table-container');
-        if (productsSection) {
-            productsSection.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'start',
-                inline: 'nearest'
-            });
-        }
-    }, 100);
-    </script>
-    """, unsafe_allow_html=True)
-
 # Initialize session state
 if 'cart' not in st.session_state:
     st.session_state.cart = {}
@@ -421,8 +402,6 @@ if 'show_order_form' not in st.session_state:
     st.session_state.show_order_form = False
 if 'search_query' not in st.session_state:
     st.session_state.search_query = ""
-if 'scroll_to_table' not in st.session_state:
-    st.session_state.scroll_to_table = False
 
 @st.cache_data
 def load_google_sheet():
@@ -537,11 +516,8 @@ def display_products_table(products_df):
         st.warning("لا توجد منتجات للعرض")
         return
     
-    # Add scroll anchor
-    st.markdown('<div class="products-anchor" id="products-table"></div>', unsafe_allow_html=True)
-    
-    # Create mobile-responsive table container
-    st.markdown('<div class="mobile-table-container">', unsafe_allow_html=True)
+    # Create mobile-responsive table container with scroll target
+    st.markdown('<div class="mobile-table-container scroll-target">', unsafe_allow_html=True)
     st.markdown('<div class="products-table">', unsafe_allow_html=True)
     
     # Table header
@@ -638,10 +614,9 @@ def display_order_details():
         </div>
         """, unsafe_allow_html=True)
 
-def navigate_page(new_page):
-    """Navigate to a new page and set scroll flag"""
+def navigate_to_page(new_page):
+    """Navigate to a new page"""
     st.session_state.current_page = new_page
-    st.session_state.scroll_to_table = True
 
 def main():
     # Main header
@@ -654,7 +629,6 @@ def main():
             st.session_state.show_order_form = True
             st.session_state.cart = {}
             st.session_state.current_page = 1
-            st.session_state.scroll_to_table = False
             st.rerun()
     
     if st.session_state.show_order_form:
@@ -709,24 +683,26 @@ def main():
         end_idx = min(start_idx + items_per_page, total_items)
         current_products = filtered_df.iloc[start_idx:end_idx]
         
-        # Display products
+        # Display products with scroll target
         st.markdown(f"### المنتجات (الصفحة {st.session_state.current_page} من {total_pages})")
         
-        # Display products table
-        display_products_table(current_products)
+        # Create container for products table that will be scrolled to
+        products_container = st.container()
+        with products_container:
+            display_products_table(current_products)
         
-        # Pagination controls with auto-scroll
+        # Pagination controls
         if total_pages > 1:
             col1, col2, col3, col4, col5 = st.columns([1, 1, 2, 1, 1])
             
             with col1:
                 if st.button("⏮️ الأولى", disabled=st.session_state.current_page == 1):
-                    navigate_page(1)
+                    navigate_to_page(1)
                     st.rerun()
             
             with col2:
                 if st.button("⬅️ السابقة", disabled=st.session_state.current_page == 1):
-                    navigate_page(st.session_state.current_page - 1)
+                    navigate_to_page(st.session_state.current_page - 1)
                     st.rerun()
             
             with col3:
@@ -735,18 +711,13 @@ def main():
             
             with col4:
                 if st.button("التالية ➡️", disabled=st.session_state.current_page == total_pages):
-                    navigate_page(st.session_state.current_page + 1)
+                    navigate_to_page(st.session_state.current_page + 1)
                     st.rerun()
             
             with col5:
                 if st.button("الأخيرة ⏭️", disabled=st.session_state.current_page == total_pages):
-                    navigate_page(total_pages)
+                    navigate_to_page(total_pages)
                     st.rerun()
-        
-        # Auto-scroll to table if navigation occurred
-        if st.session_state.scroll_to_table:
-            scroll_to_products()
-            st.session_state.scroll_to_table = False
         
         # Order summary and review
         if st.session_state.cart:
