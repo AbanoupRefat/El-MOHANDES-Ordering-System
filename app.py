@@ -380,12 +380,45 @@ st.markdown("""
         border-radius: 4px;
     }
     
+    .order-detail-row {
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Responsive styles for pagination buttons */
     @media (max-width: 768px) {
-        .order-detail-row {
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 0.5rem;
-            padding: 0.5rem;
-            font-size: 0.9rem;
+        .stButton > button {
+            font-size: 0.8rem;
+            padding: 0.5rem 0.25rem;
+            height: auto;
+            min-height: unset;
+        }
+        
+        .stButton > button > div > span { /* Target the text container inside Streamlit buttons */
+            white-space: normal !important; /* Force text wrapping */
+            word-wrap: break-word; /* Break long words */
+            display: inline-block; /* Helps with wrapping */
+            line-height: 1.2;
+        }
+        
+        /* Adjust column sizes for pagination on mobile */
+        .stColumn:has(.stButton) { /* Select columns that contain buttons */
+            min-width: unset !important; /* Remove any min-width if present */
+            max-width: unset !important; /* Remove any max-width if present */
+            flex-grow: 1; /* Allow columns to grow evenly */
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stButton > button {
+            font-size: 0.7rem;
+            padding: 0.4rem 0.15rem;
+        }
+        
+        .stButton > button > div > span {
+            font-size: 0.65rem; /* Ensure inner text is also smaller */
         }
     }
 </style>
@@ -694,12 +727,12 @@ def main():
             col1, col2, col3, col4, col5 = st.columns([1, 1, 2, 1, 1])
             
             with col1:
-                if st.button("الأولى", disabled=st.session_state.current_page == 1):
+                if st.button("⏮️ الأولى", disabled=st.session_state.current_page == 1, use_container_width=True):
                     navigate_to_page(1)
                     st.rerun()
             
             with col2:
-                if st.button("السابقة", disabled=st.session_state.current_page == 1):
+                if st.button("⬅️ السابقة", disabled=st.session_state.current_page == 1, use_container_width=True):
                     navigate_to_page(st.session_state.current_page - 1)
                     st.rerun()
             
@@ -708,12 +741,12 @@ def main():
                           unsafe_allow_html=True)
             
             with col4:
-                if st.button("التالية", disabled=st.session_state.current_page == total_pages):
+                if st.button("التالية ➡️", disabled=st.session_state.current_page == total_pages, use_container_width=True):
                     navigate_to_page(st.session_state.current_page + 1)
                     st.rerun()
             
             with col5:
-                if st.button("الأخيرة", disabled=st.session_state.current_page == total_pages):
+                if st.button("الأخيرة ⏭️", disabled=st.session_state.current_page == total_pages, use_container_width=True):
                     navigate_to_page(total_pages)
                     st.rerun()
         
