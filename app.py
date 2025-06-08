@@ -82,9 +82,7 @@ st.markdown("""
         min-height: 60px;
     }
     
-    .table-row:hover {
-        background: #f8fafc;
-    }
+    
     
     .table-row:last-child {
         border-bottom: none;
