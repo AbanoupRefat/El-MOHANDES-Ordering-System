@@ -737,7 +737,7 @@ def main():
                     st.rerun()
             
             with col3:
-                st.markdown(f'<div class="page-info">الصفحة {st.session_state.current_page} من {total_pages}</div>', 
+                st.markdown(f'<div class="page-info">{st.session_state.current_page}/{total_pages}</div>', 
                           unsafe_allow_html=True)
             
             with col4:
