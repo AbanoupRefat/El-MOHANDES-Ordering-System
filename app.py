@@ -98,7 +98,7 @@ st.markdown("""
     }
     
     .origin-cell {
-        color: #4a5568;
+        color: #fffff;
         font-size: 0.9rem;
         text-align: center;
     }
