@@ -715,7 +715,7 @@ def main():
         current_products = filtered_df.iloc[start_idx:end_idx]
         
         # Display products with scroll target
-        st.markdown(f"### المنتجات (الصفحة {st.session_state.current_page} من {total_pages})")
+        st.markdown(f"### المنتجات ( {st.session_state.current_page}/{total_pages})")
         
         # Create container for products table that will be scrolled to
         products_container = st.container()
