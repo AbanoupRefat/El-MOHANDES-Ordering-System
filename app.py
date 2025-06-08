@@ -773,6 +773,9 @@ def display_order_details():
 def navigate_to_page(new_page):
     """Navigate to a new page"""
     st.session_state.current_page = new_page
+    # Scroll to the top of the products container after pagination
+    st.markdown("<script>document.querySelector('.scroll-target').scrollIntoView({ behavior: 'smooth' });</script>", unsafe_allow_html=True)
+    st.rerun()
 
 def main():
     # Main header
@@ -876,12 +879,10 @@ def main():
             with col1:
                 if st.button("⏮️ الأولى", disabled=st.session_state.current_page == 1, use_container_width=True):
                     navigate_to_page(1)
-                    st.rerun()
             
             with col2:
                 if st.button("⬅️ السابقة", disabled=st.session_state.current_page == 1, use_container_width=True):
                     navigate_to_page(st.session_state.current_page - 1)
-                    st.rerun()
             
             with col3:
                 st.markdown(f'<div class="page-info">{st.session_state.current_page}/{total_pages}</div>', 
@@ -890,12 +891,10 @@ def main():
             with col4:
                 if st.button("التالية ➡️", disabled=st.session_state.current_page == total_pages, use_container_width=True):
                     navigate_to_page(st.session_state.current_page + 1)
-                    st.rerun()
             
             with col5:
                 if st.button("الأخيرة ⏭️", disabled=st.session_state.current_page == total_pages, use_container_width=True):
                     navigate_to_page(total_pages)
-                    st.rerun()
         
         # Order summary and review
         if st.session_state.cart:
