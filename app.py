@@ -295,6 +295,74 @@ st.markdown("""
         color: #c53030 !important;
         font-weight: 700;
     }
+    
+    /* Mobile responsive design */
+    @media (max-width: 768px) {
+        .products-table {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .products-table > div {
+            min-width: 800px !important;
+        }
+        
+        .main-header {
+            font-size: 1.8rem;
+        }
+        
+        .summary-card {
+            margin: 0.5rem 0;
+            padding: 1rem;
+        }
+        
+        .summary-title {
+            font-size: 1.1rem;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+        }
+        
+        .whatsapp-btn {
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+        }
+        
+        /* Ensure table columns maintain proper spacing on mobile */
+        .st-emotion-cache-ocqkz7 {
+            gap: 0.25rem !important;
+        }
+        
+        /* Mobile table styling */
+        .mobile-table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+        }
+    }
+    
+    /* Force table to be horizontal scrollable on mobile */
+    @media (max-width: 640px) {
+        .products-table {
+            width: 100%;
+            overflow-x: scroll;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .products-table > div:first-child {
+            min-width: 700px;
+        }
+        
+        /* Ensure Streamlit columns don't stack on mobile for this table */
+        [data-testid="column"] {
+            min-width: auto !important;
+        }
+        
+        .element-container {
+            width: 100% !important;
+        }
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -421,20 +489,20 @@ def display_products_table(products_df):
         st.warning("لا توجد منتجات للعرض")
         return
     
-    # Create table header - Reversed order: الإجمالي, التحكم, الكمية, السعر, المنشأ, البند
+    # Create table header - البند first from right, then reversed order for others
     st.markdown("""
     <div class="products-table">
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 3fr; gap: 1rem; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600; direction: rtl;">
-            <div style="text-align: center;">الإجمالي</div>
-            <div style="text-align: center;">التحكم</div>
-            <div style="text-align: center;">الكمية</div>
-            <div style="text-align: center;">السعر</div>
-            <div style="text-align: center;">المنشأ</div>
+        <div style="display: grid; grid-template-columns: 3fr 1fr 1fr 1fr 1fr 1fr; gap: 0.5rem; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600; direction: rtl; min-width: 100%; overflow-x: auto;">
             <div style="text-align: right;">البند</div>
+            <div style="text-align: center;">المنشأ</div>
+            <div style="text-align: center;">السعر</div>
+            <div style="text-align: center;">الكمية</div>
+            <div style="text-align: center;">التحكم</div>
+            <div style="text-align: center;">الإجمالي</div>
         </div>
     """, unsafe_allow_html=True)
     
-    # Display each product row in reversed order
+    # Display each product row - البند first from right, then others in order
     for idx, (_, product) in enumerate(products_df.iterrows()):
         product_name = product['البند']
         origin = product['المنشأ']
@@ -448,16 +516,22 @@ def display_products_table(products_df):
         if product_name in st.session_state.cart:
             st.session_state.cart[product_name]['price'] = price
         
-        # Create table row in reversed order: الإجمالي, التحكم, الكمية, السعر, المنشأ, البند
-        col1, col2, col3, col4, col5, col6 = st.columns([1, 1, 1, 1, 1, 3])
+        # Create table row - البند first from right, then others in order
+        col1, col2, col3, col4, col5, col6 = st.columns([3, 1, 1, 1, 1, 1])
         
-        with col1:  # الإجمالي
-            if subtotal > 0:
-                st.markdown(f'<div class="subtotal-cell">{subtotal} ج.م</div>', unsafe_allow_html=True)
-            else:
-                st.markdown('<div class="subtotal-cell" style="text-align: center; color: #64748b;">-</div>', unsafe_allow_html=True)
+        with col1:  # البند
+            st.markdown(f'<div class="product-name-cell" style="text-align: right; direction: rtl; word-wrap: break-word;">{product_name}</div>', unsafe_allow_html=True)
         
-        with col2:  # التحكم
+        with col2:  # المنشأ
+            st.markdown(f'<div class="origin-cell" style="text-align: center;">{origin}</div>', unsafe_allow_html=True)
+        
+        with col3:  # السعر
+            st.markdown(f'<div class="price-cell" style="text-align: center;">{price} ج.م</div>', unsafe_allow_html=True)
+        
+        with col4:  # الكمية
+            st.markdown(f'<div class="qty-display" style="text-align: center;">{current_qty}</div>', unsafe_allow_html=True)
+        
+        with col5:  # التحكم
             # Quantity controls in a row
             btn_col1, btn_col2 = st.columns(2)
             with btn_col1:
@@ -471,17 +545,11 @@ def display_products_table(products_df):
                     update_quantity(product_name, 1)
                     st.rerun()
         
-        with col3:  # الكمية
-            st.markdown(f'<div class="qty-display" style="text-align: center;">{current_qty}</div>', unsafe_allow_html=True)
-        
-        with col4:  # السعر
-            st.markdown(f'<div class="price-cell" style="text-align: center;">{price} ج.م</div>', unsafe_allow_html=True)
-        
-        with col5:  # المنشأ
-            st.markdown(f'<div class="origin-cell" style="text-align: center;">{origin}</div>', unsafe_allow_html=True)
-        
-        with col6:  # البند
-            st.markdown(f'<div class="product-name-cell" style="text-align: right; direction: rtl;">{product_name}</div>', unsafe_allow_html=True)
+        with col6:  # الإجمالي
+            if subtotal > 0:
+                st.markdown(f'<div class="subtotal-cell">{subtotal} ج.م</div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="subtotal-cell" style="text-align: center; color: #64748b;">-</div>', unsafe_allow_html=True)
         
         # Add row separator
         st.markdown('<div style="border-bottom: 1px solid #e2e8f0; margin: 0.5rem 0;"></div>', unsafe_allow_html=True)
