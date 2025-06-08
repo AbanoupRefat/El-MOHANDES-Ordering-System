@@ -16,13 +16,14 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for modern design and Arabic support
+# Custom CSS for modern design and Arabic support with improved mobile responsiveness
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
     
     * {
         font-family: 'Cairo', sans-serif !important;
+        box-sizing: border-box;
     }
     
     .main-header {
@@ -34,33 +35,51 @@ st.markdown("""
         text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     }
     
-    .new-order-btn {
-        display: flex;
-        justify-content: center;
-        margin: 2rem 0;
-    }
-    
-    .products-table {
+    /* Mobile-first responsive table container */
+    .mobile-table-container {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
         background: white;
         border-radius: 12px;
-        overflow: hidden;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         border: 1px solid #e2e8f0;
         margin: 1rem 0;
     }
     
+    .products-table {
+        min-width: 800px; /* Minimum width to maintain table structure */
+        width: 100%;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
     .table-header {
+        display: grid;
+        grid-template-columns: 3fr 1.5fr 1.2fr 1fr 1.5fr 1.2fr;
+        gap: 0.5rem;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         font-weight: 600;
         padding: 1rem;
+        direction: rtl;
         text-align: center;
+        position: sticky;
+        top: 0;
+        z-index: 10;
     }
     
     .table-row {
+        display: grid;
+        grid-template-columns: 3fr 1.5fr 1.2fr 1fr 1.5fr 1.2fr;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
         border-bottom: 1px solid #f1f5f9;
-        padding: 0.75rem;
         transition: background-color 0.2s ease;
+        direction: rtl;
+        align-items: center;
+        min-height: 60px;
     }
     
     .table-row:hover {
@@ -73,116 +92,73 @@ st.markdown("""
     
     .product-name-cell {
         font-weight: 600;
-        color: #f8fafc !important;
-        font-size: 1rem;
+        color: #2d3748;
+        font-size: 0.95rem;
+        text-align: right;
+        word-wrap: break-word;
+        line-height: 1.4;
     }
     
     .origin-cell {
-        color: #f8fafc !important;
+        color: #4a5568;
         font-size: 0.9rem;
+        text-align: center;
     }
     
     .price-cell {
         color: #2f855a;
         font-weight: 600;
-        font-size: 1rem;
-    }
-    
-    .subtotal-cell {
-        color: #c53030 !important;
-        font-weight: 700;
-        font-size: 1.1rem;
-        background: #f8fafc !important;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
+        font-size: 0.95rem;
         text-align: center;
     }
     
-    .stat-number {
-        font-size: 2rem;
-        font-weight: 700;
-        display: block;
-        color: #ffffff !important;
-    }
-    
-    .page-info {
-        text-align: center; 
-        padding: 0.5rem;
-        background: #ffffff !important;
+    .qty-display {
+        background: #ffffff;
         border: 2px solid #3b82f6;
-        border-radius: 8px;
-        font-weight: 600;
-        color: #1e293b !important;
+        border-radius: 6px;
+        padding: 0.25rem;
+        text-align: center;
+        font-weight: 700;
+        color: #2d3748;
+        font-size: 0.9rem;
+        min-width: 40px;
     }
     
-    .quantity-controls {
+    .control-buttons {
         display: flex;
+        gap: 0.25rem;
+        justify-content: center;
         align-items: center;
-        gap: 0.5rem;
-        margin: 0.5rem 0;
     }
     
     .qty-btn {
         background: #3b82f6;
         color: white;
         border: none;
-        border-radius: 6px;
-        width: 30px;
-        height: 30px;
+        border-radius: 4px;
+        width: 24px;
+        height: 24px;
         cursor: pointer;
         font-weight: bold;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s;
     }
     
     .qty-btn:hover {
         background: #2563eb;
     }
     
-    .qty-display {
-        background: #ffffff !important;
-        border: 2px solid #3b82f6 !important;
-        border-radius: 6px;
-        padding: 0.25rem 0.75rem;
-        min-width: 50px;
-        text-align: center;
-        font-weight: 700 !important;
-        color: #2d3748 !important;
-        font-size: 1rem !important;
-    }
-    
-    .subtotal {
-        color: #c53030 !important;
+    .subtotal-cell {
+        color: #c53030;
         font-weight: 700;
-        font-size: 1.2rem;
-        background: #f8fafc !important;
-        padding: 0.25rem 0.5rem;
+        font-size: 0.95rem;
+        text-align: center;
+        background: #fed7d7;
+        padding: 0.25rem;
         border-radius: 4px;
-    }
-    
-    .pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 1rem;
-        margin: 2rem 0;
-    }
-    
-    .page-btn {
-        background: #f8fafc;
-        border: 1px solid #cbd5e1;
-        border-radius: 6px;
-        padding: 0.5rem 1rem;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    
-    .page-btn:hover {
-        background: #3b82f6;
-        color: white;
-    }
-    
-    .page-btn.active {
-        background: #3b82f6;
-        color: white;
     }
     
     .summary-card {
@@ -199,16 +175,6 @@ st.markdown("""
         font-size: 1.3rem;
         font-weight: 600;
         margin-bottom: 1rem;
-    }
-    
-    .summary-stats {
-        display: flex;
-        justify-content: space-around;
-        margin: 1rem 0;
-    }
-    
-    .stat-item {
-        text-align: center;
     }
     
     .stat-number {
@@ -251,64 +217,69 @@ st.markdown("""
         text-align: center;
     }
     
+    .page-info {
+        text-align: center; 
+        padding: 0.5rem;
+        background: #ffffff;
+        border: 2px solid #3b82f6;
+        border-radius: 8px;
+        font-weight: 600;
+        color: #1e293b;
+    }
+    
     .rtl {
         direction: rtl;
         text-align: right;
     }
     
-    /* Fix for contrast issues */
-    .st-emotion-cache-1v0mbdj {
-        color: #2d3748 !important;
-    }
-    
-    .st-emotion-cache-1v0mbdj strong {
-        color: #2d3748 !important;
-    }
-    
-    /* Hide JSON preview */
-    .stJson {
-        display: none;
-    }
-    
-    /* Order details styling */
-    .order-item {
-        padding: 0.75rem;
-        border-bottom: 1px solid #e2e8f0;
-    }
-    
-    .order-item:last-child {
-        border-bottom: none;
-    }
-    
-    /* Order details with better visibility */
-    .order-detail-item {
-        color: #f8fafc !important;
-        font-weight: 600;
-    }
-    
-    .order-detail-price {
-        color: #2f855a !important;
-        font-weight: 600;
-    }
-    
-    .order-detail-subtotal {
-        color: #c53030 !important;
-        font-weight: 700;
-    }
-    
     /* Mobile responsive design */
     @media (max-width: 768px) {
-        .products-table {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        .products-table > div {
-            min-width: 800px !important;
-        }
-        
         .main-header {
             font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+        
+        .mobile-table-container {
+            margin: 0.5rem -1rem; /* Extend to screen edges on mobile */
+            border-radius: 0;
+        }
+        
+        .products-table {
+            min-width: 700px; /* Reduced minimum width for mobile */
+        }
+        
+        .table-header,
+        .table-row {
+            grid-template-columns: 2.5fr 1.2fr 1fr 0.8fr 1.2fr 1fr;
+            padding: 0.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .product-name-cell {
+            font-size: 0.85rem;
+            line-height: 1.3;
+        }
+        
+        .origin-cell,
+        .price-cell {
+            font-size: 0.8rem;
+        }
+        
+        .qty-btn {
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+        }
+        
+        .qty-display {
+            font-size: 0.8rem;
+            padding: 0.2rem;
+            min-width: 35px;
+        }
+        
+        .subtotal-cell {
+            font-size: 0.8rem;
+            padding: 0.2rem;
         }
         
         .summary-card {
@@ -328,39 +299,90 @@ st.markdown("""
             padding: 0.8rem 1.5rem;
             font-size: 1rem;
         }
-        
-        /* Ensure table columns maintain proper spacing on mobile */
-        .st-emotion-cache-ocqkz7 {
-            gap: 0.25rem !important;
+    }
+    
+    @media (max-width: 480px) {
+        .table-header,
+        .table-row {
+            grid-template-columns: 2fr 1fr 0.8fr 0.7fr 1fr 0.8fr;
+            padding: 0.4rem;
+            font-size: 0.8rem;
+            gap: 0.3rem;
         }
         
-        /* Mobile table styling */
-        .mobile-table-container {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            width: 100%;
+        .product-name-cell {
+            font-size: 0.8rem;
+        }
+        
+        .qty-btn {
+            width: 18px;
+            height: 18px;
+            font-size: 0.6rem;
+        }
+        
+        .qty-display {
+            font-size: 0.75rem;
+            min-width: 30px;
         }
     }
     
-    /* Force table to be horizontal scrollable on mobile */
-    @media (max-width: 640px) {
-        .products-table {
-            width: 100%;
-            overflow-x: scroll;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        .products-table > div:first-child {
-            min-width: 700px;
-        }
-        
-        /* Ensure Streamlit columns don't stack on mobile for this table */
-        [data-testid="column"] {
-            min-width: auto !important;
-        }
-        
-        .element-container {
-            width: 100% !important;
+    /* Force table to maintain structure */
+    .stColumn {
+        min-width: auto !important;
+    }
+    
+    /* Hide JSON preview */
+    .stJson {
+        display: none;
+    }
+    
+    /* Order details styling */
+    .order-detail-row {
+        display: grid;
+        grid-template-columns: 3fr 1fr 1fr 1fr;
+        gap: 1rem;
+        padding: 0.75rem;
+        border-bottom: 1px solid #e2e8f0;
+        align-items: center;
+        direction: rtl;
+    }
+    
+    .order-detail-row:last-child {
+        border-bottom: none;
+    }
+    
+    .order-detail-item {
+        color: #2d3748;
+        font-weight: 600;
+        text-align: right;
+    }
+    
+    .order-detail-qty {
+        color: #4a5568;
+        text-align: center;
+    }
+    
+    .order-detail-price {
+        color: #2f855a;
+        font-weight: 600;
+        text-align: center;
+    }
+    
+    .order-detail-subtotal {
+        color: #c53030;
+        font-weight: 700;
+        text-align: center;
+        background: #fed7d7;
+        padding: 0.25rem;
+        border-radius: 4px;
+    }
+    
+    @media (max-width: 768px) {
+        .order-detail-row {
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            font-size: 0.9rem;
         }
     }
 </style>
@@ -484,25 +506,28 @@ def generate_whatsapp_message():
     return urllib.parse.quote(message)
 
 def display_products_table(products_df):
-    """Display products in a table format with controls"""
+    """Display products in a responsive table format"""
     if products_df.empty:
         st.warning("لا توجد منتجات للعرض")
         return
     
-    # Create table header - البند first from right, then reversed order for others
+    # Create mobile-responsive table container
+    st.markdown('<div class="mobile-table-container">', unsafe_allow_html=True)
+    st.markdown('<div class="products-table">', unsafe_allow_html=True)
+    
+    # Table header
     st.markdown("""
-    <div class="products-table">
-        <div style="display: grid; grid-template-columns: 3fr 1fr 1fr 1fr 1fr 1fr; gap: 0.5rem; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600; direction: rtl; min-width: 100%; overflow-x: auto;">
-            <div style="text-align: right;">البند</div>
-            <div style="text-align: center;">المنشأ</div>
-            <div style="text-align: center;">السعر</div>
-            <div style="text-align: center;">الكمية</div>
-            <div style="text-align: center;">التحكم</div>
-            <div style="text-align: center;">الإجمالي</div>
-        </div>
+    <div class="table-header">
+        <div>البند</div>
+        <div>المنشأ</div>
+        <div>السعر</div>
+        <div>الكمية</div>
+        <div>التحكم</div>
+        <div>الإجمالي</div>
+    </div>
     """, unsafe_allow_html=True)
     
-    # Display each product row - البند first from right, then others in order
+    # Display each product row
     for idx, (_, product) in enumerate(products_df.iterrows()):
         product_name = product['البند']
         origin = product['المنشأ']
@@ -516,45 +541,73 @@ def display_products_table(products_df):
         if product_name in st.session_state.cart:
             st.session_state.cart[product_name]['price'] = price
         
-        # Create table row - البند first from right, then others in order
-        col1, col2, col3, col4, col5, col6 = st.columns([3, 1, 1, 1, 1, 1])
+        # Create table row with embedded controls
+        st.markdown(f"""
+        <div class="table-row">
+            <div class="product-name-cell">{product_name}</div>
+            <div class="origin-cell">{origin}</div>
+            <div class="price-cell">{price} ج.م</div>
+            <div class="qty-display">{current_qty}</div>
+            <div class="control-buttons">
+        """, unsafe_allow_html=True)
         
-        with col1:  # البند
-            st.markdown(f'<div class="product-name-cell" style="text-align: right; direction: rtl; word-wrap: break-word;">{product_name}</div>', unsafe_allow_html=True)
+        # Add quantity control buttons using columns for proper alignment
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("➖", key=f"minus_{idx}_{st.session_state.current_page}", 
+                        help="تقليل الكمية", use_container_width=True):
+                update_quantity(product_name, -1)
+                st.rerun()
+        with col2:
+            if st.button("➕", key=f"plus_{idx}_{st.session_state.current_page}", 
+                        help="زيادة الكمية", use_container_width=True):
+                if product_name not in st.session_state.cart:
+                    st.session_state.cart[product_name] = {'quantity': 0, 'price': price}
+                update_quantity(product_name, 1)
+                st.rerun()
         
-        with col2:  # المنشأ
-            st.markdown(f'<div class="origin-cell" style="text-align: center;">{origin}</div>', unsafe_allow_html=True)
-        
-        with col3:  # السعر
-            st.markdown(f'<div class="price-cell" style="text-align: center;">{price} ج.م</div>', unsafe_allow_html=True)
-        
-        with col4:  # الكمية
-            st.markdown(f'<div class="qty-display" style="text-align: center;">{current_qty}</div>', unsafe_allow_html=True)
-        
-        with col5:  # التحكم
-            # Quantity controls in a row
-            btn_col1, btn_col2 = st.columns(2)
-            with btn_col1:
-                if st.button("➖", key=f"minus_{idx}", help="تقليل الكمية", use_container_width=True):
-                    update_quantity(product_name, -1)
-                    st.rerun()
-            with btn_col2:
-                if st.button("➕", key=f"plus_{idx}", help="زيادة الكمية", use_container_width=True):
-                    if product_name not in st.session_state.cart:
-                        st.session_state.cart[product_name] = {'quantity': 0, 'price': price}
-                    update_quantity(product_name, 1)
-                    st.rerun()
-        
-        with col6:  # الإجمالي
-            if subtotal > 0:
-                st.markdown(f'<div class="subtotal-cell">{subtotal} ج.م</div>', unsafe_allow_html=True)
-            else:
-                st.markdown('<div class="subtotal-cell" style="text-align: center; color: #64748b;">-</div>', unsafe_allow_html=True)
-        
-        # Add row separator
-        st.markdown('<div style="border-bottom: 1px solid #e2e8f0; margin: 0.5rem 0;"></div>', unsafe_allow_html=True)
+        # Close control buttons div and add subtotal
+        subtotal_display = f"{subtotal} ج.م" if subtotal > 0 else "-"
+        st.markdown(f"""
+            </div>
+            <div class="subtotal-cell">{subtotal_display}</div>
+        </div>
+        """, unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+def display_order_details():
+    """Display order details in a responsive format"""
+    if not st.session_state.cart:
+        return
+    
+    st.markdown("### 📋 تفاصيل الطلبية")
+    
+    # Header row
+    st.markdown("""
+    <div class="order-detail-row" style="background: #f7fafc; font-weight: 700;">
+        <div>المنتج</div>
+        <div>الكمية</div>
+        <div>السعر</div>
+        <div>الإجمالي</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Product rows
+    for product_name, details in st.session_state.cart.items():
+        qty = details['quantity']
+        price = details['price']
+        subtotal = qty * price
+        
+        st.markdown(f"""
+        <div class="order-detail-row">
+            <div class="order-detail-item">{product_name}</div>
+            <div class="order-detail-qty">{qty} قطعة</div>
+            <div class="order-detail-price">{price} ج.م</div>
+            <div class="order-detail-subtotal">{subtotal} ج.م</div>
+        </div>
+        """, unsafe_allow_html=True)
 
 def main():
     # Main header
@@ -577,22 +630,36 @@ def main():
             st.error("لا يمكن تحميل البيانات من Google Sheets")
             return
         
-        # Search functionality
+        # Search functionality with filter options
         st.markdown('<div class="search-container">', unsafe_allow_html=True)
-        search_query = st.text_input("🔍 البحث في المنتجات", value=st.session_state.search_query, 
-                                   placeholder="ابحث عن قطعة غيار...")
+        
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            search_query = st.text_input("🔍 البحث في المنتجات", 
+                                       value=st.session_state.search_query, 
+                                       placeholder="ابحث عن قطعة غيار...")
+        with col2:
+            origin_filter = st.selectbox("تصفية حسب المنشأ", 
+                                       ["الكل"] + list(df['المنشأ'].unique()))
+        
         st.markdown('</div>', unsafe_allow_html=True)
         
-        # Filter data based on search
+        # Filter data based on search and origin
+        filtered_df = df.copy()
+        
         if search_query:
-            filtered_df = df[df['البند'].str.contains(search_query, case=False, na=False)]
-        else:
-            filtered_df = df
+            filtered_df = filtered_df[filtered_df['البند'].str.contains(search_query, case=False, na=False)]
+        
+        if origin_filter and origin_filter != "الكل":
+            filtered_df = filtered_df[filtered_df['المنشأ'] == origin_filter]
+        
+        # Show results count
+        st.markdown(f"**عدد النتائج: {len(filtered_df)} منتج**")
         
         # Pagination settings
-        items_per_page = 10
+        items_per_page = 15
         total_items = len(filtered_df)
-        total_pages = math.ceil(total_items / items_per_page)
+        total_pages = math.ceil(total_items / items_per_page) if total_items > 0 else 1
         
         if total_items == 0:
             st.warning("لا توجد منتجات تطابق البحث")
@@ -667,23 +734,8 @@ def main():
                 </div>
                 """, unsafe_allow_html=True)
             
-            # Order details
-            st.markdown("### 📋 تفاصيل الطلبية")
-            for product_name, details in st.session_state.cart.items():
-                qty = details['quantity']
-                price = details['price']
-                subtotal = qty * price
-                
-                with st.container():
-                    col1, col2, col3, col4 = st.columns([3, 1, 1, 1])
-                    with col1:
-                        st.markdown(f'<div class="order-detail-item">{product_name}</div>', unsafe_allow_html=True)
-                    with col2:
-                        st.markdown(f'<div class="order-detail-item">{qty} قطعة</div>', unsafe_allow_html=True)
-                    with col3:
-                        st.markdown(f'<div class="order-detail-price">{price} ج.م</div>', unsafe_allow_html=True)
-                    with col4:
-                        st.markdown(f'<div class="order-detail-subtotal">{subtotal} ج.م</div>', unsafe_allow_html=True)
+            # Order details using the new responsive display
+            display_order_details()
             
             # WhatsApp send button
             st.markdown("---")
